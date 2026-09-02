@@ -17,7 +17,9 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install --no-save jsdom@26.1.0
       - name: Check JavaScript syntax
         run: |
           node --check public/app.js
@@ -28,9 +30,5 @@ jobs:
           node --check src/worker.js
       - name: Check Worker bundle
         run: npx wrangler deploy --dry-run --outdir .wrangler-dry-run
-      - name: Install Chromium smoke-test runtime
-        run: |
-          npm install --no-save playwright@1.55.0
-          npx playwright install --with-deps chromium
-      - name: Browser smoke test
+      - name: DOM smoke test
         run: node tests/browser-smoke.mjs
