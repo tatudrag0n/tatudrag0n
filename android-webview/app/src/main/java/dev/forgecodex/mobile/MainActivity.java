@@ -15,7 +15,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
-    private static final String HOME = "https://forgecodex.mct-official.com/";
+    private static final String HOME = "https://forgecodex.mct-official.com/?app=1.2";
     private WebView web;
 
     @Override
@@ -37,10 +37,10 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(false);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         s.setJavaScriptCanOpenWindowsAutomatically(true);
         s.setSupportMultipleWindows(false);
-        s.setUserAgentString(s.getUserAgentString() + " ForgeCodexAndroid/1.1");
+        s.setUserAgentString(s.getUserAgentString() + " ForgeCodexAndroid/1.2");
 
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface
@@ -79,8 +79,12 @@ public class MainActivity extends Activity {
 
         web.setWebChromeClient(new WebChromeClient());
 
-        if (savedInstanceState == null) web.loadUrl(HOME);
-        else web.restoreState(savedInstanceState);
+        if (savedInstanceState == null) {
+            web.clearCache(true);
+            web.loadUrl(HOME);
+        } else {
+            web.restoreState(savedInstanceState);
+        }
     }
 
     @Override
