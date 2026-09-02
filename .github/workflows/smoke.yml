@@ -1,0 +1,36 @@
+name: ForgeCodex Smoke Test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Check JavaScript syntax
+        run: |
+          node --check public/app.js
+          node --check public/team.js
+          node --check public/runner.js
+          node --check public/hotfix.js
+          node --check public/authfix.js
+          node --check src/worker.js
+      - name: Check Worker bundle
+        run: npx wrangler deploy --dry-run --outdir .wrangler-dry-run
+      - name: Install Chromium smoke-test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Browser smoke test
+        run: node tests/browser-smoke.mjs
