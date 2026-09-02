@@ -1,13 +1,55 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    if (url.pathname === '/api/github/device/code' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return Response.json({ error: 'invalid_request' }, { status: 400 }); }
+      const clientId = String(body?.client_id || '').trim();
+      if (!/^[A-Za-z0-9_-]{8,128}$/.test(clientId)) return Response.json({ error: 'client_id_required' }, { status: 400 });
+      const gh = await fetch('https://github.com/login/device/code', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ client_id: clientId, scope: 'repo read:user workflow' }).toString()
+      });
+      const text = await gh.text();
+      return new Response(text, {
+        status: gh.status,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+      });
+    }
+
+    if (url.pathname === '/api/github/device/token' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return Response.json({ error: 'invalid_request' }, { status: 400 }); }
+      const clientId = String(body?.client_id || '').trim();
+      const deviceCode = String(body?.device_code || '').trim();
+      if (!/^[A-Za-z0-9_-]{8,128}$/.test(clientId) || !deviceCode || deviceCode.length > 512) {
+        return Response.json({ error: 'invalid_request' }, { status: 400 });
+      }
+      const gh = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: clientId,
+          device_code: deviceCode,
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code'
+        }).toString()
+      });
+      const text = await gh.text();
+      return new Response(text, {
+        status: gh.status,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+      });
+    }
+
     if (url.pathname.startsWith('/relay/')) {
       const room = url.pathname.slice('/relay/'.length).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
       if (!room) return new Response('room required', { status: 400 });
       const id = env.RUNNER_RELAY.idFromName(room);
       return env.RUNNER_RELAY.get(id).fetch(request);
     }
-    if (url.pathname === '/api/health') return Response.json({ ok: true, service: 'forgecodex', relay: true });
+    if (url.pathname === '/api/health') return Response.json({ ok: true, service: 'forgecodex', relay: true, githubDeviceProxy: true });
     return env.ASSETS.fetch(request);
   }
 };
