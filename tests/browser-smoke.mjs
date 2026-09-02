@@ -2,11 +2,13 @@ import { JSDOM } from 'jsdom';
 import fs from 'node:fs';
 
 const html = fs.readFileSync('public/index.html', 'utf8');
-const app = fs.readFileSync('public/app.js', 'utf8');
-const team = fs.readFileSync('public/team.js', 'utf8');
-const runner = fs.readFileSync('public/runner.js', 'utf8');
-const hotfix = fs.readFileSync('public/hotfix.js', 'utf8');
-const authfix = fs.readFileSync('public/authfix.js', 'utf8');
+const scripts = [
+  'public/app.js',
+  'public/team.js',
+  'public/runner.js',
+  'public/hotfix.js',
+  'public/authfix.js'
+].map((p) => fs.readFileSync(p, 'utf8')).join('\n;\n');
 
 const dom = new JSDOM(html, {
   url: 'https://forgecodex.test/',
@@ -54,7 +56,6 @@ window.fetch = async (input, init = {}) => {
   throw new Error(`Unexpected fetch: ${url} ${init.method || 'GET'}`);
 };
 
-// Avoid runner auto-connect during this UI-only smoke test.
 window.WebSocket = class {
   static OPEN = 1;
   constructor() { this.readyState = 0; }
@@ -62,9 +63,7 @@ window.WebSocket = class {
   send() {}
 };
 
-for (const source of [app, team, runner, hotfix, authfix]) {
-  window.eval(source);
-}
+window.eval(scripts);
 window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
 await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -79,12 +78,12 @@ byId('webMode').value = 'off';
 byId('save').click();
 byId('prompt').value = 'hello';
 byId('send').click();
-await new Promise((resolve) => setTimeout(resolve, 20));
+await new Promise((resolve) => setTimeout(resolve, 30));
 assert(byId('chat').textContent.includes('SMOKE_OK'), 'Chat click did not produce assistant response');
 
 byId('clientId').value = 'Iv1.smoketestclient';
 byId('ghLogin').click();
-await new Promise((resolve) => setTimeout(resolve, 20));
+await new Promise((resolve) => setTimeout(resolve, 30));
 assert(byId('deviceCode').textContent.includes('ABCD-EFGH'), 'GitHub Sign in did not show device code');
 assert(!byId('deviceBox').classList.contains('hidden'), 'GitHub device box stayed hidden');
 assert(tokenPolls >= 0, 'Token polling setup failed');
