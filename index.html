@@ -10,7 +10,23 @@
 <body>
 <header><div><b>ForgeCodex</b><span class="badge">iPad</span></div><span id="status" class="muted">Personal BYOK</span></header>
 <main>
-<section class="panel keys"><h2>Settings</h2><p class="muted">APIキーとGitHubトークンはこのブラウザ内にのみ保存します。リポジトリには保存しません。</p><input id="or" type="password" placeholder="OpenRouter API key"><input id="gh" type="password" placeholder="GitHub token"><select id="model"><option value="z-ai/glm-5.2:free">GLM-5.2 Free — 無料</option><option value="z-ai/glm-5.2">GLM-5.2 — 通常版</option><option value="z-ai/glm-5.3-flash">GLM-5.3 Flash</option></select><button id="save">Save settings</button></section>
+<section class="panel keys">
+<h2>Settings</h2>
+<p class="muted">OpenRouterキーとGitHubのログイン情報は、このiPadのブラウザ内にのみ保存します。GitHub Personal Access Tokenの手入力は不要です。</p>
+<input id="or" type="password" placeholder="OpenRouter API key">
+<select id="model">
+<option value="z-ai/glm-5.2:free">GLM-5.2 Free — 無料</option>
+<option value="z-ai/glm-5.2">GLM-5.2 — 通常版</option>
+<option value="z-ai/glm-5.3-flash">GLM-5.3 Flash</option>
+</select>
+<div id="ghSetup">
+<input id="clientId" autocomplete="off" placeholder="GitHub OAuth Client ID（初回のみ）">
+<div class="row"><button id="ghLogin" class="grow">Sign in with GitHub</button><button id="ghLogout" class="hidden">Sign out</button></div>
+<div id="deviceBox" class="hidden"><p class="muted">GitHubで次のコードを入力してください。</p><div id="deviceCode" style="font-size:1.5rem;font-weight:700;letter-spacing:.08em"></div><a id="deviceLink" href="https://github.com/login/device" target="_blank" rel="noopener">GitHub認証画面を開く</a></div>
+<div id="ghUser" class="muted">GitHub: 未ログイン</div>
+</div>
+<button id="save">Save settings</button>
+</section>
 <div class="row"><select id="repo" class="grow"></select><select id="branch"></select><button id="reload">↻</button></div>
 <nav><button data-tab="chat" class="active">Chat</button><button data-tab="files">Files</button><button data-tab="github">GitHub</button></nav>
 <section id="chatTab" class="panel tab"><div id="chat"></div><textarea id="prompt" placeholder="このリポジトリを調べて、必要な修正をして…"></textarea><div class="row"><button id="send" class="grow">Run agent</button><button id="clear">Clear</button></div></section>
