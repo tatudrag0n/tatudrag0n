@@ -21,6 +21,8 @@ window.HTMLElement.prototype.scrollIntoView = function() {};
 window.confirm = () => true;
 window.open = () => ({ closed: false });
 window.crypto.randomUUID = () => '00000000-0000-4000-8000-000000000001';
+const realSetTimeout = window.setTimeout.bind(window);
+window.setTimeout = (fn, ms = 0, ...args) => realSetTimeout(fn, Math.min(Number(ms) || 0, 1), ...args);
 
 window.fetch = async (input, init = {}) => {
   const url = String(input);
@@ -36,7 +38,7 @@ window.fetch = async (input, init = {}) => {
       user_code: 'ABCD-EFGH',
       verification_uri: 'https://github.com/login/device',
       expires_in: 900,
-      interval: 0
+      interval: 5
     }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
   if (url === '/api/github/device/token') {
@@ -75,7 +77,7 @@ window.WebSocket = class {
 
 window.eval(scripts);
 window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
-await new Promise((resolve) => setTimeout(resolve, 0));
+await new Promise((resolve) => setTimeout(resolve, 5));
 
 const byId = (id) => window.document.getElementById(id);
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
@@ -88,12 +90,12 @@ byId('webMode').value = 'off';
 byId('save').click();
 byId('prompt').value = 'hello';
 byId('send').click();
-await new Promise((resolve) => setTimeout(resolve, 30));
+await new Promise((resolve) => setTimeout(resolve, 20));
 assert(byId('chat').textContent.includes('SMOKE_OK'), 'Chat click did not produce assistant response');
 
 byId('clientId').value = 'Iv1.smoketestclient';
 byId('ghLogin').click();
-await new Promise((resolve) => setTimeout(resolve, 50));
+await new Promise((resolve) => setTimeout(resolve, 30));
 assert(byId('deviceCode').textContent.includes('ABCD-EFGH'), 'GitHub Sign in did not show device code');
 assert(byId('ghUser').textContent.includes('smoke-user') || byId('ghUser').textContent.includes('接続済み'), 'GitHub Sign in did not complete');
 assert(byId('repo').value === 'smoke/repo', 'Repository list did not load after GitHub sign in');
