@@ -7,7 +7,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -35,16 +37,37 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(false);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        s.setUserAgentString(s.getUserAgentString() + " ForgeCodexAndroid/1.0");
+        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        s.setJavaScriptCanOpenWindowsAutomatically(true);
+        s.setSupportMultipleWindows(false);
+        s.setUserAgentString(s.getUserAgentString() + " ForgeCodexAndroid/1.1");
+
+        web.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void openExternal(String url) {
+                runOnUiThread(() -> {
+                    try {
+                        Uri uri = Uri.parse(url);
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    } catch (Exception ignored) {}
+                });
+            }
+        }, "ForgeCodexAndroid");
 
         web.setWebViewClient(new WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
-                Uri u = request.getUrl();
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return handleUrl(request.getUrl());
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return handleUrl(Uri.parse(url));
+            }
+
+            private boolean handleUrl(Uri u) {
                 String host = u.getHost();
-                if (host != null && (host.equals("forgecodex.mct-official.com") || host.equals("github.com"))) {
-                    return false;
-                }
+                if (host != null && host.equals("forgecodex.mct-official.com")) return false;
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, u));
                     return true;
@@ -54,17 +77,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        web.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
-                WebView.HitTestResult hit = view.getHitTestResult();
-                String url = hit != null ? hit.getExtra() : null;
-                if (url != null) {
-                    try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {}
-                }
-                return false;
-            }
-        });
+        web.setWebChromeClient(new WebChromeClient());
 
         if (savedInstanceState == null) web.loadUrl(HOME);
         else web.restoreState(savedInstanceState);
@@ -72,7 +85,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        web.saveState(outState);
+        if (web != null) web.saveState(outState);
         super.onSaveInstanceState(outState);
     }
 
