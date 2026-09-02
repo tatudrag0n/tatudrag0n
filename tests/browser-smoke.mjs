@@ -22,7 +22,6 @@ window.confirm = () => true;
 window.open = () => ({ closed: false });
 window.crypto.randomUUID = () => '00000000-0000-4000-8000-000000000001';
 
-let tokenPolls = 0;
 window.fetch = async (input, init = {}) => {
   const url = String(input);
   if (url === 'https://openrouter.ai/api/v1/chat/completions') {
@@ -41,14 +40,25 @@ window.fetch = async (input, init = {}) => {
     }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
   if (url === '/api/github/device/token') {
-    tokenPolls += 1;
-    return new Response(JSON.stringify({ error: 'authorization_pending' }), {
+    return new Response(JSON.stringify({ access_token: 'gh-smoke-token', token_type: 'bearer', scope: 'repo read:user workflow' }), {
       status: 200,
       headers: { 'content-type': 'application/json' }
     });
   }
   if (url === 'https://api.github.com/user') {
     return new Response(JSON.stringify({ login: 'smoke-user' }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  if (url.startsWith('https://api.github.com/user/repos?')) {
+    return new Response(JSON.stringify([{ full_name: 'smoke/repo' }]), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  if (url === 'https://api.github.com/repos/smoke/repo/branches?per_page=100') {
+    return new Response(JSON.stringify([{ name: 'main' }]), {
       status: 200,
       headers: { 'content-type': 'application/json' }
     });
@@ -83,9 +93,9 @@ assert(byId('chat').textContent.includes('SMOKE_OK'), 'Chat click did not produc
 
 byId('clientId').value = 'Iv1.smoketestclient';
 byId('ghLogin').click();
-await new Promise((resolve) => setTimeout(resolve, 30));
+await new Promise((resolve) => setTimeout(resolve, 50));
 assert(byId('deviceCode').textContent.includes('ABCD-EFGH'), 'GitHub Sign in did not show device code');
-assert(!byId('deviceBox').classList.contains('hidden'), 'GitHub device box stayed hidden');
-assert(tokenPolls >= 0, 'Token polling setup failed');
+assert(byId('ghUser').textContent.includes('smoke-user') || byId('ghUser').textContent.includes('接続済み'), 'GitHub Sign in did not complete');
+assert(byId('repo').value === 'smoke/repo', 'Repository list did not load after GitHub sign in');
 
-console.log('DOM smoke test passed: Chat and GitHub Sign in are wired');
+console.log('DOM smoke test passed: Chat + GitHub Sign in + repo load');
