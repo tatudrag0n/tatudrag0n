@@ -1,57 +1,25 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0c0f">
-<title>ForgeCodex</title>
-<link rel="stylesheet" href="./style.css">
-</head>
-<body>
-<header><div><b>ForgeCodex</b><span class="badge">iPad</span></div><span id="status" class="muted">Personal BYOK</span></header>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0c0f">
+<title>ForgeCodex</title><link rel="stylesheet" href="./style.css">
+</head><body>
+<header><div><b>ForgeCodex</b><span class="badge">Codex-like</span></div><span id="status" class="muted">Starting…</span></header>
 <main>
-<section class="panel keys">
-<h2>Settings</h2>
-<p class="muted">OpenRouterキーだけでAIチャットを使えます。GitHub接続はリポジトリの読取・編集・Commit・PRを使いたいときだけ必要です。</p>
-<input id="or" type="password" placeholder="OpenRouter API key">
-<div>
-<select id="model">
-<optgroup label="無料 — おすすめ">
-<option value="openrouter/free">Auto Free — 利用可能な無料AIを自動選択</option>
-<option value="z-ai/glm-5.2:free">GLM-5.2 Free</option>
-<option value="nvidia/nemotron-3-ultra-550b-a55b:free">Nemotron 3 Ultra Free — Agent/Coding</option>
-<option value="minimax/minimax-m2.7:free">MiniMax M2.7 Free — Agent/Coding</option>
-<option value="thinkingmachines/inkling:free">Inkling Free — Agent/Multimodal</option>
-<option value="dots-studio/dots-3-note-preview:free">Dots3 Note Free — 2026/09/30まで</option>
-</optgroup>
-<optgroup label="有料/その他">
-<option value="z-ai/glm-5.2">GLM-5.2</option>
-<option value="z-ai/glm-5.3-flash">GLM-5.3 Flash</option>
-<option value="__custom__">Custom OpenRouter model ID…</option>
-</optgroup>
-</select>
-<input id="customModel" class="hidden" autocomplete="off" placeholder="例: provider/model:free">
-<div id="modelHint" class="muted">無料モデルはOpenRouter側の提供状況やレート制限により利用できない場合があります。</div>
-<select id="webMode" style="margin-top:.65rem">
-<option value="auto">Web検索: 自動 — AIが必要な時だけ検索（推奨）</option>
-<option value="always">Web検索: 常時 — 毎回1回検索</option>
-<option value="off">Web検索: OFF</option>
-</select>
-<div class="muted">自動ではOpenRouterのAgentic Web Search / FetchをAI自身が判断して使用します。検索が発生した時だけ検索料金がかかります。</div>
-</div>
-<div id="ghSetup">
-<input id="clientId" autocomplete="off" placeholder="GitHub OAuth Client ID（GitHub機能を使う場合のみ）">
-<div class="row"><button id="ghLogin" class="grow">Sign in with GitHub</button><button id="ghLogout" class="hidden">Sign out</button></div>
-<div id="deviceBox" class="hidden"><p class="muted">GitHubで次のコードを入力してください。</p><div id="deviceCode" style="font-size:1.5rem;font-weight:700;letter-spacing:.08em"></div><a id="deviceLink" href="https://github.com/login/device" target="_blank" rel="noopener">GitHub認証画面を開く</a></div>
-<div id="ghUser" class="muted">GitHub: 未ログイン（チャットは利用可能）</div>
-</div>
-<button id="save">Save settings</button>
-</section>
-<div class="row"><select id="repo" class="grow"></select><select id="branch"></select><button id="reload">↻</button></div>
-<nav><button data-tab="chat" class="active">Chat</button><button data-tab="files">Files</button><button data-tab="github">GitHub</button></nav>
-<section id="chatTab" class="panel tab"><div id="chat"></div><textarea id="prompt" placeholder="コードの相談、設計、デバッグ、質問など…"></textarea><div class="row"><button id="send" class="grow">Send</button><button id="clear">Clear</button></div></section>
-<section id="filesTab" class="panel tab hidden"><div class="row"><input id="path" class="grow" placeholder="src/file.js"><button id="open">Open</button></div><textarea id="editor" class="editor"></textarea><input id="msg" placeholder="Commit message"><button id="commit">Commit file</button></section>
-<section id="githubTab" class="panel tab hidden"><div class="row"><input id="newBranch" class="grow" placeholder="new branch"><button id="branchCreate">Create branch</button></div><div class="row"><input id="prTitle" class="grow" placeholder="PR title"><button id="prCreate">Create PR</button></div><pre id="gitout"></pre></section>
-</main>
-<script src="./app.js"></script>
-</body></html>
+<details class="panel settings"><summary>Settings</summary>
+<p class="muted">OpenRouterキーだけでチャット可能。GitHub接続でAgent・Files・Git・Issues・PR・Actionsが有効になります。</p>
+<div class="grid2"><input id="or" type="password" placeholder="OpenRouter API key"><select id="model"><optgroup label="無料"><option value="openrouter/free">Auto Free</option><option value="z-ai/glm-5.2:free">GLM-5.2 Free</option><option value="nvidia/nemotron-3-ultra-550b-a55b:free">Nemotron 3 Ultra Free</option><option value="minimax/minimax-m2.7:free">MiniMax M2.7 Free</option><option value="thinkingmachines/inkling:free">Inkling Free</option></optgroup><optgroup label="その他"><option value="z-ai/glm-5.2">GLM-5.2</option><option value="z-ai/glm-5.3-flash">GLM-5.3 Flash</option><option value="__custom__">Custom model ID…</option></optgroup></select></div>
+<input id="customModel" class="hidden" placeholder="provider/model:free">
+<div class="grid2"><select id="webMode"><option value="auto">Web: 自動（推奨）</option><option value="always">Web: 常時</option><option value="off">Web: OFF</option></select><select id="agentMode"><option value="agent">Agent — 編集まで実行</option><option value="plan">Plan — 調査・計画のみ</option><option value="review">Review — 変更レビュー</option></select></div>
+<input id="clientId" autocomplete="off" placeholder="GitHub OAuth Client ID（GitHub機能用）"><div class="row"><button id="ghLogin" class="grow">Sign in with GitHub</button><button id="ghLogout" class="hidden">Sign out</button><button id="save">Save</button></div>
+<div id="deviceBox" class="hidden"><div class="muted">GitHubでコードを入力</div><div id="deviceCode" class="codebig"></div><a id="deviceLink" href="https://github.com/login/device" target="_blank" rel="noopener">認証画面を開く</a></div><div id="ghUser" class="muted">GitHub: 未ログイン</div>
+</details>
+<div class="toolbar"><select id="repo" class="grow"></select><select id="branch"></select><button id="reload">↻</button></div>
+<nav><button data-tab="chat" class="active">Chat</button><button data-tab="files">Files</button><button data-tab="git">Git</button><button data-tab="issues">Issues</button><button data-tab="actions">Actions</button><button data-tab="project">Project</button></nav>
+<section id="chatTab" class="panel tab"><div id="chat"></div><textarea id="prompt" placeholder="実装、修正、調査、レビューなどを指示…"></textarea><div class="row"><button id="send" class="grow">Run</button><button id="clear">Clear</button></div></section>
+<section id="filesTab" class="panel tab hidden"><div class="row"><input id="path" class="grow" placeholder="src/file.js"><button id="open">Open</button><button id="tree">Tree</button></div><textarea id="editor" class="editor"></textarea><input id="msg" placeholder="Commit message"><div class="row"><button id="commit" class="grow">Commit</button><button id="deleteFile" class="danger">Delete</button></div><div class="row"><input id="movePath" class="grow" placeholder="移動先 path"><button id="moveFile">Move/Rename</button></div><pre id="fileout"></pre></section>
+<section id="gitTab" class="panel tab hidden"><div class="grid2"><input id="newBranch" placeholder="new branch"><button id="branchCreate">Create branch</button><input id="baseBranch" value="main" placeholder="base"><button id="showDiff">Diff</button></div><div class="row"><input id="prTitle" class="grow" placeholder="PR title"><button id="prCreate">Create PR</button></div><div class="row"><button id="listPRs">Open PRs</button><button id="reviewDiff">AI Review</button><button id="undoLast" class="danger">Undo last commit</button></div><pre id="gitout"></pre></section>
+<section id="issuesTab" class="panel tab hidden"><div class="row"><button id="loadIssues">Reload Issues</button></div><input id="issueTitle" placeholder="Issue title"><textarea id="issueBody" class="smallarea" placeholder="Issue body"></textarea><button id="createIssue">Create Issue</button><pre id="issueout"></pre></section>
+<section id="actionsTab" class="panel tab hidden"><div class="row"><button id="loadActions">Reload Actions</button><input id="runId" class="grow" placeholder="run id"><button id="runJobs">Jobs</button></div><pre id="actionout"></pre></section>
+<section id="projectTab" class="panel tab hidden"><h3>Project instructions / Memory</h3><p class="muted">このブラウザ内に保存し、Agentのsystem promptへ毎回追加します。リポジトリのAGENTS.mdも自動読込します。</p><textarea id="projectMemory" class="editor" placeholder="例: Paper 1.21.x / Java 21。既存API互換を壊さない。変更後は必ず差分をレビュー。"></textarea><div class="row"><button id="saveMemory" class="grow">Save Memory</button><button id="loadAgents">Read AGENTS.md</button></div><pre id="projectout"></pre><hr><h3>Execution backend</h3><p class="muted">Shell/build/testは安全なSandboxバックエンド接続後に有効化予定。</p><input id="execUrl" placeholder="Execution backend URL（未接続）" disabled></section>
+</main><script src="./app.js"></script></body></html>
