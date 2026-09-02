@@ -12,7 +12,7 @@
 <main>
 <section class="panel keys">
 <h2>Settings</h2>
-<p class="muted">OpenRouterキーとGitHubのログイン情報は、このiPadのブラウザ内にのみ保存します。GitHub Personal Access Tokenの手入力は不要です。</p>
+<p class="muted">OpenRouterキーだけでAIチャットを使えます。GitHub接続はリポジトリの読取・編集・Commit・PRを使いたいときだけ必要です。</p>
 <input id="or" type="password" placeholder="OpenRouter API key">
 <select id="model">
 <option value="z-ai/glm-5.2:free">GLM-5.2 Free — 無料</option>
@@ -20,16 +20,16 @@
 <option value="z-ai/glm-5.3-flash">GLM-5.3 Flash</option>
 </select>
 <div id="ghSetup">
-<input id="clientId" autocomplete="off" placeholder="GitHub OAuth Client ID（初回のみ）">
+<input id="clientId" autocomplete="off" placeholder="GitHub OAuth Client ID（GitHub機能を使う場合のみ）">
 <div class="row"><button id="ghLogin" class="grow">Sign in with GitHub</button><button id="ghLogout" class="hidden">Sign out</button></div>
 <div id="deviceBox" class="hidden"><p class="muted">GitHubで次のコードを入力してください。</p><div id="deviceCode" style="font-size:1.5rem;font-weight:700;letter-spacing:.08em"></div><a id="deviceLink" href="https://github.com/login/device" target="_blank" rel="noopener">GitHub認証画面を開く</a></div>
-<div id="ghUser" class="muted">GitHub: 未ログイン</div>
+<div id="ghUser" class="muted">GitHub: 未ログイン（チャットは利用可能）</div>
 </div>
 <button id="save">Save settings</button>
 </section>
 <div class="row"><select id="repo" class="grow"></select><select id="branch"></select><button id="reload">↻</button></div>
 <nav><button data-tab="chat" class="active">Chat</button><button data-tab="files">Files</button><button data-tab="github">GitHub</button></nav>
-<section id="chatTab" class="panel tab"><div id="chat"></div><textarea id="prompt" placeholder="このリポジトリを調べて、必要な修正をして…"></textarea><div class="row"><button id="send" class="grow">Run agent</button><button id="clear">Clear</button></div></section>
+<section id="chatTab" class="panel tab"><div id="chat"></div><textarea id="prompt" placeholder="コードの相談、設計、デバッグ、質問など…"></textarea><div class="row"><button id="send" class="grow">Send</button><button id="clear">Clear</button></div></section>
 <section id="filesTab" class="panel tab hidden"><div class="row"><input id="path" class="grow" placeholder="src/file.js"><button id="open">Open</button></div><textarea id="editor" class="editor"></textarea><input id="msg" placeholder="Commit message"><button id="commit">Commit file</button></section>
 <section id="githubTab" class="panel tab hidden"><div class="row"><input id="newBranch" class="grow" placeholder="new branch"><button id="branchCreate">Create branch</button></div><div class="row"><input id="prTitle" class="grow" placeholder="PR title"><button id="prCreate">Create PR</button></div><pre id="gitout"></pre></section>
 </main>
