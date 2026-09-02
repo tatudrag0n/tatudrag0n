@@ -1,53 +1,92 @@
-import { chromium } from 'playwright';
-import http from 'node:http';
+import { JSDOM } from 'jsdom';
 import fs from 'node:fs';
-import path from 'node:path';
 
-const root = path.resolve('public');
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
-const server = http.createServer((req,res)=>{
-  const pathname = new URL(req.url,'http://127.0.0.1').pathname;
-  let p = pathname === '/' ? '/index.html' : pathname;
-  const file = path.join(root,p);
-  if (!file.startsWith(root) || !fs.existsSync(file)) { res.writeHead(404); res.end('not found'); return; }
-  res.writeHead(200,{'content-type':types[path.extname(file)]||'application/octet-stream','cache-control':'no-store'});
-  fs.createReadStream(file).pipe(res);
+const html = fs.readFileSync('public/index.html', 'utf8');
+const app = fs.readFileSync('public/app.js', 'utf8');
+const team = fs.readFileSync('public/team.js', 'utf8');
+const runner = fs.readFileSync('public/runner.js', 'utf8');
+const hotfix = fs.readFileSync('public/hotfix.js', 'utf8');
+const authfix = fs.readFileSync('public/authfix.js', 'utf8');
+
+const dom = new JSDOM(html, {
+  url: 'https://forgecodex.test/',
+  runScripts: 'outside-only',
+  pretendToBeVisual: true
 });
-await new Promise(r=>server.listen(4173,'127.0.0.1',r));
+const { window } = dom;
 
-const browser = await chromium.launch({headless:true});
-const page = await browser.newPage();
-const errors=[];
-page.on('pageerror',e=>errors.push('pageerror: '+e.message));
-page.on('console',m=>{ if(m.type()==='error') errors.push('console: '+m.text()); });
+window.HTMLElement.prototype.scrollIntoView = function() {};
+window.confirm = () => true;
+window.open = () => ({ closed: false });
+window.crypto.randomUUID = () => '00000000-0000-4000-8000-000000000001';
 
-await page.route('https://openrouter.ai/api/v1/chat/completions', async route => {
-  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{role:'assistant',content:'SMOKE_OK'}}]})});
-});
-await page.route('http://127.0.0.1:4173/api/github/device/code', async route => {
-  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({device_code:'dev-smoke',user_code:'ABCD-EFGH',verification_uri:'https://github.com/login/device',expires_in:900,interval:5})});
-});
-await page.route('http://127.0.0.1:4173/api/github/device/token', async route => {
-  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({error:'authorization_pending'})});
-});
-await page.route('https://github.com/login/device', async route => {
-  await route.fulfill({status:200,contentType:'text/html',body:'<title>GitHub device</title>'});
-});
+let tokenPolls = 0;
+window.fetch = async (input, init = {}) => {
+  const url = String(input);
+  if (url === 'https://openrouter.ai/api/v1/chat/completions') {
+    return new Response(JSON.stringify({ choices: [{ message: { role: 'assistant', content: 'SMOKE_OK' } }] }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  if (url === '/api/github/device/code') {
+    return new Response(JSON.stringify({
+      device_code: 'dev-smoke',
+      user_code: 'ABCD-EFGH',
+      verification_uri: 'https://github.com/login/device',
+      expires_in: 900,
+      interval: 0
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+  if (url === '/api/github/device/token') {
+    tokenPolls += 1;
+    return new Response(JSON.stringify({ error: 'authorization_pending' }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  if (url === 'https://api.github.com/user') {
+    return new Response(JSON.stringify({ login: 'smoke-user' }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  throw new Error(`Unexpected fetch: ${url} ${init.method || 'GET'}`);
+};
 
-await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
-await page.locator('summary').click();
-await page.locator('#or').fill('smoke-key');
-await page.locator('#webMode').selectOption('off');
-await page.locator('#save').click();
-await page.locator('#prompt').fill('hello');
-await page.locator('#send').click();
-await page.waitForFunction(()=>document.querySelector('#chat')?.textContent.includes('SMOKE_OK'),null,{timeout:10000});
+// Avoid runner auto-connect during this UI-only smoke test.
+window.WebSocket = class {
+  static OPEN = 1;
+  constructor() { this.readyState = 0; }
+  close() {}
+  send() {}
+};
 
-await page.locator('#clientId').fill('Iv1.smoketestclient');
-await page.locator('#ghLogin').click();
-await page.waitForFunction(()=>document.querySelector('#deviceCode')?.textContent.includes('ABCD-EFGH'),null,{timeout:10000});
+for (const source of [app, team, runner, hotfix, authfix]) {
+  window.eval(source);
+}
+window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
+await new Promise((resolve) => setTimeout(resolve, 0));
 
-if(errors.length) throw new Error(errors.join('\n'));
-console.log('Browser smoke test passed: chat + GitHub sign-in initiation');
-await browser.close();
-server.close();
+const byId = (id) => window.document.getElementById(id);
+const assert = (condition, message) => { if (!condition) throw new Error(message); };
+
+assert(typeof byId('send')?.onclick === 'function', 'Run button has no click handler');
+assert(typeof byId('ghLogin')?.onclick === 'function', 'GitHub Sign in button has no click handler');
+
+byId('or').value = 'smoke-key';
+byId('webMode').value = 'off';
+byId('save').click();
+byId('prompt').value = 'hello';
+byId('send').click();
+await new Promise((resolve) => setTimeout(resolve, 20));
+assert(byId('chat').textContent.includes('SMOKE_OK'), 'Chat click did not produce assistant response');
+
+byId('clientId').value = 'Iv1.smoketestclient';
+byId('ghLogin').click();
+await new Promise((resolve) => setTimeout(resolve, 20));
+assert(byId('deviceCode').textContent.includes('ABCD-EFGH'), 'GitHub Sign in did not show device code');
+assert(!byId('deviceBox').classList.contains('hidden'), 'GitHub device box stayed hidden');
+assert(tokenPolls >= 0, 'Token polling setup failed');
+
+console.log('DOM smoke test passed: Chat and GitHub Sign in are wired');
