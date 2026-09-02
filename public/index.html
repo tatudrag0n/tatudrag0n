@@ -14,11 +14,25 @@
 <h2>Settings</h2>
 <p class="muted">OpenRouterキーだけでAIチャットを使えます。GitHub接続はリポジトリの読取・編集・Commit・PRを使いたいときだけ必要です。</p>
 <input id="or" type="password" placeholder="OpenRouter API key">
+<div>
 <select id="model">
-<option value="z-ai/glm-5.2:free">GLM-5.2 Free — 無料</option>
-<option value="z-ai/glm-5.2">GLM-5.2 — 通常版</option>
+<optgroup label="無料 — おすすめ">
+<option value="openrouter/free">Auto Free — 利用可能な無料AIを自動選択</option>
+<option value="z-ai/glm-5.2:free">GLM-5.2 Free</option>
+<option value="nvidia/nemotron-3-ultra-550b-a55b:free">Nemotron 3 Ultra Free — Agent/Coding</option>
+<option value="minimax/minimax-m2.7:free">MiniMax M2.7 Free — Agent/Coding</option>
+<option value="thinkingmachines/inkling:free">Inkling Free — Agent/Multimodal</option>
+<option value="dots-studio/dots-3-note-preview:free">Dots3 Note Free — 2026/09/30まで</option>
+</optgroup>
+<optgroup label="有料/その他">
+<option value="z-ai/glm-5.2">GLM-5.2</option>
 <option value="z-ai/glm-5.3-flash">GLM-5.3 Flash</option>
+<option value="__custom__">Custom OpenRouter model ID…</option>
+</optgroup>
 </select>
+<input id="customModel" class="hidden" autocomplete="off" placeholder="例: provider/model:free">
+<div id="modelHint" class="muted">無料モデルはOpenRouter側の提供状況やレート制限により利用できない場合があります。</div>
+</div>
 <div id="ghSetup">
 <input id="clientId" autocomplete="off" placeholder="GitHub OAuth Client ID（GitHub機能を使う場合のみ）">
 <div class="row"><button id="ghLogin" class="grow">Sign in with GitHub</button><button id="ghLogout" class="hidden">Sign out</button></div>
