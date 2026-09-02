@@ -1,11 +1,27 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "forgecodex",
+  "main": "./src/worker.js",
   "compatibility_date": "2026-09-02",
   "assets": {
     "directory": "./public",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RUNNER_RELAY",
+        "class_name": "RunnerRelay"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RunnerRelay"]
+    }
+  ],
   "routes": [
     {
       "pattern": "forgecodex.mct-official.com",
