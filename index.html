@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0c0f">
+<title>ForgeCodex</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header><div><b>ForgeCodex</b><span class="badge">iPad</span></div><span id="status" class="muted">BYOK Cloud</span></header>
+<main>
+<section class="panel keys"><h2>Keys</h2><p class="muted">キーはこのiPadのブラウザ内にのみ保存します。GitHubやOpenRouterへ直接送信し、リポジトリには保存しません。</p><input id="or" type="password" placeholder="OpenRouter API key"><input id="gh" type="password" placeholder="GitHub token"><button id="save">Save keys</button></section>
+<div class="row"><select id="repo" class="grow"></select><select id="branch"></select><button id="reload">↻</button></div>
+<nav><button data-tab="chat" class="active">Chat</button><button data-tab="files">Files</button><button data-tab="github">GitHub</button></nav>
+<section id="chatTab" class="panel tab"><div id="chat"></div><textarea id="prompt" placeholder="このリポジトリを調べて、必要な修正をして…"></textarea><div class="row"><button id="send" class="grow">Run agent</button><button id="clear">Clear</button></div></section>
+<section id="filesTab" class="panel tab hidden"><div class="row"><input id="path" class="grow" placeholder="src/file.js"><button id="open">Open</button></div><textarea id="editor" class="editor"></textarea><input id="msg" placeholder="Commit message"><button id="commit">Commit file</button></section>
+<section id="githubTab" class="panel tab hidden"><div class="row"><input id="newBranch" class="grow" placeholder="new branch"><button id="branchCreate">Create branch</button></div><div class="row"><input id="prTitle" class="grow" placeholder="PR title"><button id="prCreate">Create PR</button></div><pre id="gitout"></pre></section>
+</main>
+<script src="./app.js"></script>
+</body></html>
