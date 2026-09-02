@@ -1,12 +1,13 @@
 (()=>{
 const oldRun=run;
 async function teamRun(text){
+  const runtime=()=>window.forgeRunner?.isOnline?.()===true;
   setStatus('Team · Planner');
-  const plan=await runGitHubAgent(`TASK:\n${text}\n\nAct as Planner. Inspect the repository and produce a concrete implementation plan. Do not modify files. Identify risks, files, compatibility constraints, and how to verify using available GitHub evidence.`, 'plan');
+  const plan=await runGitHubAgent(`TASK:\n${text}\n\nAct as Planner. Inspect the repository and produce a concrete implementation plan. Do not modify files. Identify risks, files, compatibility constraints, and how to verify. A paired PC Runner may be available to the later Coder/Reviewer for real build/test execution.`, 'plan');
   setStatus('Team · Coder');
-  const implementation=await runGitHubAgent(`TASK:\n${text}\n\nPLANNER OUTPUT:\n${plan}\n\nAct as Coder. Implement the task now. Inspect before editing, make minimal coherent changes, and use repository diff/evidence to self-check. Do not claim shell/build/test execution because no execution backend exists.`, 'agent');
+  const implementation=await runGitHubAgent(`TASK:\n${text}\n\nPLANNER OUTPUT:\n${plan}\n\nAct as Coder. Implement the task now. Inspect before editing and make minimal coherent changes. ${runtime()?'A paired PC Runner is online: use run_command for appropriate build/test/lint/runtime verification after editing, and fix failures before finishing.':'No PC Runner is currently online: do not claim shell/build/test execution; use repository diff and CI evidence instead.'}`, 'agent');
   setStatus('Team · Reviewer');
-  const review=await runGitHubAgent(`Original task:\n${text}\n\nCoder report:\n${implementation}\n\nAct as an independent Reviewer. Inspect the current repository diff and relevant files. Find regressions, missing cases, security/reliability issues, and inconsistencies. Do not modify files. If everything looks acceptable, say so clearly and list what still could not be verified without a runtime.`, 'review');
+  const review=await runGitHubAgent(`Original task:\n${text}\n\nCoder report:\n${implementation}\n\nAct as an independent Reviewer. Inspect the current repository diff and relevant files. Find regressions, missing cases, security/reliability issues, and inconsistencies. Do not modify repository files. ${runtime()?'The PC Runner is online; run focused read-only or test/build commands when they materially improve verification.':'The PC Runner is offline; clearly list runtime behavior that could not be verified.'}`, 'review');
   setStatus(modeLabel());
   return `## Planner\n${plan}\n\n## Coder\n${implementation}\n\n## Reviewer\n${review}`;
 }
